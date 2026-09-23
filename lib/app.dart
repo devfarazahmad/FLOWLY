@@ -4,12 +4,6 @@ import 'package:flowly/splash_screen.dart';
 import 'package:flutter/material.dart';
 
 
-void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  runApp(const FlowlyApp());
-}
-
 class FlowlyApp extends StatelessWidget {
   const FlowlyApp({super.key});
 
@@ -17,24 +11,17 @@ class FlowlyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-
       title: 'Flowly',
 
       theme: ThemeData(
         useMaterial3: true,
-
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF7C3AED),
-        ),
-
+        fontFamily: 'Poppins',
         scaffoldBackgroundColor: Colors.white,
       ),
 
-      // First screen when the app opens
-      home: const SplashScreen(),
-
-      // App routes
+      initialRoute: '/',
       routes: {
+        '/': (context) => const SplashScreen(),
         '/onboarding': (context) => const OnboardingScreen(),
       },
     );
