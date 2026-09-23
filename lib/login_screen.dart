@@ -1,4 +1,5 @@
 
+import 'package:flowly/screens/main_navigation_screen.dart';
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -303,6 +304,13 @@ class _LoginScreenState extends State<LoginScreen> {
                     onPressed: () {
                       // Login functionality will be connected
                       // with GetX + SQLite later.
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              const MainNavigationScreen(),
+                        ),
+                      );
                     },
 
                     style: ElevatedButton.styleFrom(
@@ -336,7 +344,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     const Expanded(
                       child: Divider(
-                        color: Color(0xFFD9D9D9),
+                        color: Color.fromARGB(255, 12, 1, 31),
                         thickness: 1,
                       ),
                     ),
@@ -358,7 +366,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     const Expanded(
                       child: Divider(
-                        color: Color(0xFFD9D9D9),
+                        color: Color.fromARGB(255, 12, 1, 31),
                         thickness: 1,
                       ),
                     ),
