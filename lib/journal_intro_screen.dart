@@ -1,5 +1,5 @@
-
 import 'package:flutter/material.dart';
+import 'login_screen.dart';
 
 class JournalIntroScreen extends StatelessWidget {
   const JournalIntroScreen({super.key});
@@ -63,7 +63,6 @@ class JournalIntroScreen extends StatelessWidget {
 
                         fit: BoxFit.contain,
 
-                        // Temporary fallback if image is not added yet
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
                             width: 150,
@@ -123,7 +122,6 @@ class JournalIntroScreen extends StatelessWidget {
                       const Text(
                         'Write it down, clear your mind, '
                         'keep the moments that matter to you.',
-
                         textAlign: TextAlign.center,
 
                         style: TextStyle(
@@ -149,7 +147,12 @@ class JournalIntroScreen extends StatelessWidget {
 
                   child: ElevatedButton(
                     onPressed: () {
-                      // Next Flowly screen will be connected here.
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const LoginScreen(),
+                        ),
+                      );
                     },
 
                     style: ElevatedButton.styleFrom(
