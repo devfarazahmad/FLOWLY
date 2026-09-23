@@ -1,6 +1,6 @@
-
 import 'package:flowly/screens/main_navigation_screen.dart';
 import 'package:flutter/material.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,15 +19,33 @@ class _LoginScreenState extends State<LoginScreen> {
   void dispose() {
     emailController.dispose();
     passwordController.dispose();
-
     super.dispose();
+  }
+
+  // ------------------------------------------------------------
+  // Login
+  // ------------------------------------------------------------
+  void _login() {
+    // For now, we are not checking email/password.
+    // SQLite + GetX authentication will be connected later.
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const MainNavigationScreen(),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F7FC),
-    appBar: AppBar(
+
+      // ----------------------------------------------------------
+      // App Bar
+      // ----------------------------------------------------------
+      appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
 
@@ -35,7 +53,6 @@ class _LoginScreenState extends State<LoginScreen> {
           onPressed: () {
             Navigator.pop(context);
           },
-
           icon: const Icon(
             Icons.arrow_back_ios_new_rounded,
             color: Color(0xFF222222),
@@ -54,6 +71,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
         centerTitle: true,
       ),
+
+      // ----------------------------------------------------------
+      // Body
+      // ----------------------------------------------------------
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -61,29 +82,9 @@ class _LoginScreenState extends State<LoginScreen> {
               horizontal: 28,
               vertical: 30,
             ),
-
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-
               children: [
-                // ------------------------------------------------
-                // Back Button
-                // ------------------------------------------------
-                // IconButton(
-                //   onPressed: () {
-                //     Navigator.pop(context);
-                //   },
-
-                //   padding: EdgeInsets.zero,
-
-                //   constraints: const BoxConstraints(),
-
-                //   icon: const Icon(
-                //     Icons.arrow_back_ios_new_rounded,
-                //     size: 20,
-                //     color: Color(0xFF222222),
-                //   ),
-                // ),
 
                 const SizedBox(height: 45),
 
@@ -130,43 +131,32 @@ class _LoginScreenState extends State<LoginScreen> {
                 // ------------------------------------------------
                 TextField(
                   controller: emailController,
-
                   keyboardType: TextInputType.emailAddress,
-
                   textInputAction: TextInputAction.next,
-
                   decoration: InputDecoration(
                     hintText: 'Enter your email',
-
                     hintStyle: const TextStyle(
                       color: Color(0xFFAAAAAA),
                       fontSize: 15,
                     ),
-
                     prefixIcon: const Icon(
                       Icons.email_outlined,
                       color: Color(0xFF888888),
                     ),
-
                     filled: true,
-
                     fillColor: Colors.white,
-
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 18,
                       vertical: 17,
                     ),
-
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
                       borderSide: BorderSide.none,
                     ),
-
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
                       borderSide: BorderSide.none,
                     ),
-
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
                       borderSide: const BorderSide(
@@ -198,59 +188,45 @@ class _LoginScreenState extends State<LoginScreen> {
                 // ------------------------------------------------
                 TextField(
                   controller: passwordController,
-
                   obscureText: obscurePassword,
-
                   textInputAction: TextInputAction.done,
-
                   decoration: InputDecoration(
                     hintText: 'Enter your password',
-
                     hintStyle: const TextStyle(
                       color: Color(0xFFAAAAAA),
                       fontSize: 15,
                     ),
-
                     prefixIcon: const Icon(
                       Icons.lock_outline_rounded,
                       color: Color(0xFF888888),
                     ),
-
                     suffixIcon: IconButton(
                       onPressed: () {
                         setState(() {
                           obscurePassword = !obscurePassword;
                         });
                       },
-
                       icon: Icon(
                         obscurePassword
                             ? Icons.visibility_outlined
                             : Icons.visibility_off_outlined,
-
                         color: const Color(0xFF888888),
                       ),
                     ),
-
                     filled: true,
-
                     fillColor: Colors.white,
-
                     contentPadding: const EdgeInsets.symmetric(
                       horizontal: 18,
                       vertical: 17,
                     ),
-
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
                       borderSide: BorderSide.none,
                     ),
-
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
                       borderSide: BorderSide.none,
                     ),
-
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
                       borderSide: const BorderSide(
@@ -268,18 +244,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 // ------------------------------------------------
                 Align(
                   alignment: Alignment.centerRight,
-
                   child: TextButton(
                     onPressed: () {
                       // Forgot password screen will be added later.
                     },
-
                     style: TextButton.styleFrom(
                       padding: EdgeInsets.zero,
                       minimumSize: Size.zero,
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
-
                     child: const Text(
                       'Forgot password?',
                       style: TextStyle(
@@ -299,34 +272,19 @@ class _LoginScreenState extends State<LoginScreen> {
                 SizedBox(
                   width: double.infinity,
                   height: 58,
-
                   child: ElevatedButton(
-                    onPressed: () {
-                      // Login functionality will be connected
-                      // with GetX + SQLite later.
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              const MainNavigationScreen(),
-                        ),
-                      );
-                    },
-
+                    onPressed: _login,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 12, 1, 31),
+                      backgroundColor:
+                          const Color.fromARGB(255, 12, 1, 31),
                       foregroundColor: Colors.white,
-
                       elevation: 0,
-
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(18),
                       ),
                     ),
-
                     child: const Text(
                       'Login',
-
                       style: TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.w700,
@@ -353,7 +311,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       padding: const EdgeInsets.symmetric(
                         horizontal: 15,
                       ),
-
                       child: Text(
                         'OR',
                         style: TextStyle(
@@ -381,7 +338,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 Center(
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-
                     children: [
                       const Text(
                         'Don’t have an account? ',
@@ -395,7 +351,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         onTap: () {
                           // Signup screen will be added later.
                         },
-
                         child: const Text(
                           'Sign up',
                           style: TextStyle(

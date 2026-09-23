@@ -165,7 +165,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(24),
                 child: Image.asset(
-                  'assets/images/flowly_home.jpg',
+                  'assets/images/flowly_logo.jfif',
                   width: double.infinity,
                   height: 210,
                   fit: BoxFit.cover,
