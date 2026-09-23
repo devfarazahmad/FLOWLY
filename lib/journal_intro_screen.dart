@@ -1,9 +1,8 @@
 
 import 'package:flutter/material.dart';
-import 'journal_intro_screen.dart';
 
-class NextScreen extends StatelessWidget {
-  const NextScreen({super.key});
+class JournalIntroScreen extends StatelessWidget {
+  const JournalIntroScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -54,41 +53,43 @@ class NextScreen extends StatelessWidget {
 
                     children: [
                       // ------------------------------------------------
-                      // Image / Icon
+                      // Journal Image
                       // ------------------------------------------------
-                       Image.asset(
+                      Image.asset(
                         'assets/images/flowly_logo.jfif',
-                        width: 120,
-                        height: 120,
+
+                        width: 150,
+                        height: 150,
+
                         fit: BoxFit.contain,
 
-                        // Temporary fallback if image is missing
+                        // Temporary fallback if image is not added yet
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
-                            width: 120,
-                            height: 120,
+                            width: 150,
+                            height: 150,
 
                             decoration: BoxDecoration(
                               color: const Color(0xFFE8F5E9),
-                              borderRadius: BorderRadius.circular(30),
+                              borderRadius: BorderRadius.circular(35),
                             ),
 
                             child: const Icon(
-                              Icons.auto_awesome_rounded,
-                              size: 55,
+                              Icons.menu_book_rounded,
+                              size: 65,
                               color: Color(0xFF22C55E),
                             ),
                           );
-                        },),
-                     
+                        },
+                      ),
 
                       const SizedBox(height: 30),
 
                       // ------------------------------------------------
-                      // Title
+                      // First Text
                       // ------------------------------------------------
                       const Text(
-                        'Let’s get started',
+                        'Reflect and Reset',
                         textAlign: TextAlign.center,
 
                         style: TextStyle(
@@ -101,11 +102,27 @@ class NextScreen extends StatelessWidget {
                       const SizedBox(height: 14),
 
                       // ------------------------------------------------
-                      // Description
+                      // Second Text
                       // ------------------------------------------------
                       const Text(
-                        'Organize your tasks, build better habits, '
-                        'and make every day flow smoothly.',
+                        'A space just for you',
+                        textAlign: TextAlign.center,
+
+                        style: TextStyle(
+                          fontSize: 19,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF22C55E),
+                        ),
+                      ),
+
+                      const SizedBox(height: 14),
+
+                      // ------------------------------------------------
+                      // Third Text
+                      // ------------------------------------------------
+                      const Text(
+                        'Write it down, clear your mind, '
+                        'keep the moments that matter to you.',
 
                         textAlign: TextAlign.center,
 
@@ -132,13 +149,7 @@ class NextScreen extends StatelessWidget {
 
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              const JournalIntroScreen(),
-                        ),
-                      );
+                      // Next Flowly screen will be connected here.
                     },
 
                     style: ElevatedButton.styleFrom(
