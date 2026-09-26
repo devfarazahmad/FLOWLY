@@ -26,7 +26,7 @@ class OnboardingScreen extends StatelessWidget {
                     children: [
                       // Flowly Logo
                       Image.asset(
-                        'assets/images/flowly_logo.jfif',
+                        'assets/images/flowly_logo.png',
                         width: 120,
                         height: 120,
                         fit: BoxFit.contain,

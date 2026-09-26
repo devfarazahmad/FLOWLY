@@ -56,7 +56,7 @@ class JournalIntroScreen extends StatelessWidget {
                       // Journal Image
                       // ------------------------------------------------
                       Image.asset(
-                        'assets/images/flowly_logo.jfif',
+                        'assets/images/flowly_logo.png',
 
                         width: 150,
                         height: 150,
