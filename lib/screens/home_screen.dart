@@ -93,6 +93,19 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text(
+          'Flowly',
+          style: TextStyle(
+            color: Color(0xFF111827),
+            fontSize: 24,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        centerTitle: true,
+      ),
       backgroundColor: const Color(0xFFF7F8FC),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -109,14 +122,14 @@ class _HomeScreenState extends State<HomeScreen> {
               const Text(
                 'Good morning',
                 style: TextStyle(
-                  fontSize: 30,
+                  fontSize: 25,
                   fontWeight: FontWeight.w700,
                   color: Color(0xFF111827),
                   letterSpacing: -0.5,
                 ),
               ),
 
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
 
               const Text(
                 'Ready to make your daily flow?',
@@ -127,14 +140,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-              const SizedBox(height: 24),
+              const SizedBox(height: 10),
 
               // ----------------------------------------------------------
               // CATEGORY BUTTONS
               // ----------------------------------------------------------
 
               SizedBox(
-                height: 42,
+                height: 38,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
                   physics: const BouncingScrollPhysics(),
@@ -207,7 +220,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-              const SizedBox(height: 30),
+              const SizedBox(height: 20),
 
               // ----------------------------------------------------------
               // TODAY PROGRESS TITLE
