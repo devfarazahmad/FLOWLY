@@ -1,3 +1,4 @@
+import 'package:flowly/screens/home_screen.dart';
 import 'package:flowly/screens/main_navigation_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -273,7 +274,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: double.infinity,
                   height: 58,
                   child: ElevatedButton(
-                    onPressed: _login,
+                    onPressed: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const HomeScreen()),
+                    ),
                     style: ElevatedButton.styleFrom(
                       backgroundColor:
                           const Color.fromARGB(255, 12, 1, 31),

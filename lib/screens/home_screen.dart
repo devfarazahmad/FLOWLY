@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -22,114 +21,98 @@ class _HomeScreenState extends State<HomeScreen> {
     'Add New',
   ];
 
-  final List<Map<String, dynamic>> tasks = [
-    {
-      'title': 'Complete project report',
-      'category': 'Work',
-      'time': '10:00 AM',
-      'completed': true,
-    },
-    {
-      'title': 'Study Flutter',
-      'category': 'Education',
-      'time': '12:00 PM',
-      'completed': false,
-    },
-    {
-      'title': 'Buy groceries',
-      'category': 'Shopping',
-      'time': '05:00 PM',
-      'completed': true,
-    },
-    {
-      'title': 'Go for a 30 minute walk',
-      'category': 'Health',
-      'time': '06:30 PM',
-      'completed': false,
-    },
-    {
-      'title': 'Plan tomorrow',
-      'category': 'Personal',
-      'time': '09:00 PM',
-      'completed': false,
-    },
+  final List<Task> tasks = [
+    Task(
+      title: 'Complete Flutter project',
+      category: 'Work',
+      time: '09:00 AM',
+      completed: true,
+    ),
+    Task(
+      title: 'Study Flutter & Dart',
+      category: 'Education',
+      time: '11:00 AM',
+      completed: true,
+    ),
+    Task(
+      title: 'Buy groceries',
+      category: 'Shopping',
+      time: '02:00 PM',
+      completed: false,
+    ),
+    Task(
+      title: 'Exercise for 30 minutes',
+      category: 'Health',
+      time: '05:30 PM',
+      completed: false,
+    ),
+    Task(
+      title: 'Read a book',
+      category: 'Personal',
+      time: '08:00 PM',
+      completed: false,
+    ),
   ];
 
   int get completedTasks {
-    return tasks.where((task) {
-      return task['completed'] == true;
-    }).length;
-  }
-
-  int get totalTasks {
-    return tasks.length;
+    return tasks.where((task) => task.completed).length;
   }
 
   double get progress {
-    if (totalTasks == 0) {
-      return 0;
-    }
-
-    return completedTasks / totalTasks;
+    if (tasks.isEmpty) return 0;
+    return completedTasks / tasks.length;
   }
 
-  List<Map<String, dynamic>> get visibleTasks {
+  List<Task> get filteredTasks {
     if (selectedCategory == 0) {
       return tasks;
     }
 
-    final String category = categories[selectedCategory];
+    final category = categories[selectedCategory];
 
-    return tasks.where((task) {
-      return task['category'] == category;
-    }).toList();
+    return tasks
+        .where((task) => task.category == category)
+        .toList();
+  }
+
+  void toggleTask(int index) {
+    setState(() {
+      final task = filteredTasks[index];
+
+      final originalIndex = tasks.indexOf(task);
+
+      tasks[originalIndex] = Task(
+        title: task.title,
+        category: task.category,
+        time: task.time,
+        completed: !task.completed,
+      );
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F7FB),
-
-      // ===============================================================
-      // FLOATING BUTTON
-      // ===============================================================
-
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF22C55E),
-        onPressed: () {},
-        child: const Icon(
-          Icons.add,
-          color: Colors.white,
-          size: 30,
-        ),
-      ),
-
-      // ===============================================================
-      // HOME
-      // ===============================================================
-
+      backgroundColor: const Color(0xFFF7F8FC),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(
-            20,
-            25,
-            20,
-            100,
-          ),
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 30),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
 
-              // =========================================================
+              // ----------------------------------------------------------
               // GREETING
-              // =========================================================
+              // ----------------------------------------------------------
 
               const Text(
-                'Good Morning!',
+                'Good morning',
                 style: TextStyle(
                   fontSize: 30,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF202020),
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF111827),
+                  letterSpacing: -0.5,
                 ),
               ),
 
@@ -139,77 +122,70 @@ class _HomeScreenState extends State<HomeScreen> {
                 'Ready to make your daily flow?',
                 style: TextStyle(
                   fontSize: 16,
-                  color: Color(0xFF777777),
+                  color: Color(0xFF6B7280),
+                  fontWeight: FontWeight.w400,
                 ),
               ),
 
-              const SizedBox(height: 25),
+              const SizedBox(height: 24),
 
-              // =========================================================
+              // ----------------------------------------------------------
               // CATEGORY BUTTONS
-              // =========================================================
+              // ----------------------------------------------------------
 
-              const Text(
-                'Categories',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF222222),
-                ),
-              ),
-
-              const SizedBox(height: 12),
-
-              Wrap(
-                spacing: 9,
-                runSpacing: 10,
-                children: List.generate(
-                  categories.length,
-                  (index) {
-                    final bool selected =
+              SizedBox(
+                height: 42,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: categories.length,
+                  separatorBuilder: (context, index) {
+                    return const SizedBox(width: 10);
+                  },
+                  itemBuilder: (context, index) {
+                    final bool isSelected =
                         selectedCategory == index;
 
-                    final bool addNew =
+                    final bool isAddNew =
                         categories[index] == 'Add New';
 
                     return GestureDetector(
                       onTap: () {
-                        if (addNew) {
-                          return;
+                        if (isAddNew) {
+                          _showAddTaskMessage();
+                        } else {
+                          setState(() {
+                            selectedCategory = index;
+                          });
                         }
-
-                        setState(() {
-                          selectedCategory = index;
-                        });
                       },
-                      child: Container(
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
                         padding: const EdgeInsets.symmetric(
                           horizontal: 17,
-                          vertical: 11,
                         ),
                         decoration: BoxDecoration(
-                          color: selected
-                              ? const Color(0xFF22C55E)
-                              : Colors.white,
-                          borderRadius:
-                              BorderRadius.circular(14),
+                          color: isAddNew
+                              ? const Color(0xFF111827)
+                              : isSelected
+                                  ? const Color(0xFF111827)
+                                  : Colors.white,
+                          borderRadius: BorderRadius.circular(22),
                           border: Border.all(
-                            color: selected
-                                ? const Color(0xFF22C55E)
-                                : const Color(0xFFDCDCDC),
-                            width: 1,
+                            color: isAddNew || isSelected
+                                ? const Color(0xFF111827)
+                                : const Color(0xFFE5E7EB),
                           ),
                         ),
+                        alignment: Alignment.center,
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            if (addNew) ...[
-                              Icon(
+                            if (isAddNew) ...[
+                              const Icon(
                                 Icons.add,
                                 size: 17,
-                                color: selected
-                                    ? Colors.white
-                                    : const Color(0xFF22C55E),
+                                color: Colors.white,
                               ),
                               const SizedBox(width: 5),
                             ],
@@ -218,9 +194,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
-                                color: selected
+                                color: isAddNew || isSelected
                                     ? Colors.white
-                                    : const Color(0xFF333333),
+                                    : const Color(0xFF4B5563),
                               ),
                             ),
                           ],
@@ -231,109 +207,182 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: 30),
 
-              // =========================================================
-              // TODAY PROGRESS
-              // =========================================================
+              // ----------------------------------------------------------
+              // TODAY PROGRESS TITLE
+              // ----------------------------------------------------------
 
               const Text(
                 'Today Progress',
                 style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  color: Color(0xFF222222),
+                  fontSize: 21,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF111827),
                 ),
               ),
 
-              const SizedBox(height: 15),
+              const SizedBox(height: 16),
 
-              // =========================================================
-              // PROGRESS TRACKER CARD
-              // =========================================================
+              // ----------------------------------------------------------
+              // PROGRESS CARD
+              // ----------------------------------------------------------
 
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.only(
-                  top: 25,
-                  left: 15,
-                  right: 15,
-                  bottom: 22,
+                padding: const EdgeInsets.fromLTRB(
+                  20,
+                  20,
+                  20,
+                  22,
                 ),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(25),
-                  border: Border.all(
-                    color: const Color(0xFFE5E5E5),
-                  ),
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.04),
+                      blurRadius: 20,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
                 ),
                 child: Column(
                   children: [
 
-                    // ---------------------------------------------------
-                    // PROGRESS TRACKER
-                    // ---------------------------------------------------
-
+                    // Progress Gauge
                     SizedBox(
-                      height: 190,
-                      width: double.infinity,
+                      height: 180,
                       child: CustomPaint(
-                        painter: TodayProgressPainter(
+                        painter: ProgressGaugePainter(
                           progress: progress,
                         ),
-                        child: Column(
-                          mainAxisAlignment:
-                              MainAxisAlignment.end,
-                          children: [
-
-                            Text(
-                              '${(progress * 100).round()}%',
-                              style: const TextStyle(
-                                fontSize: 38,
-                                fontWeight: FontWeight.w800,
-                                color: Color(0xFF222222),
-                              ),
+                        child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 55),
+                            child: Column(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  '${(progress * 100).round()}%',
+                                  style: const TextStyle(
+                                    fontSize: 34,
+                                    fontWeight: FontWeight.w800,
+                                    color: Color(0xFF111827),
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                const Text(
+                                  'Completed',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Color(0xFF9CA3AF),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
                             ),
-
-                            const SizedBox(height: 2),
-
-                            const Text(
-                              'Daily Progress',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: Color(0xFF999999),
-                              ),
-                            ),
-
-                            const SizedBox(height: 13),
-                          ],
+                          ),
                         ),
                       ),
                     ),
 
-                    // ---------------------------------------------------
-                    // COMPLETED TASKS
-                    // ---------------------------------------------------
+                    const SizedBox(height: 5),
 
-                    const SizedBox(height: 8),
+                    // 0 - 100 Labels
+                    Row(
+                      mainAxisAlignment:
+                          MainAxisAlignment.spaceBetween,
+                      children: const [
+                        Text(
+                          '0',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF9CA3AF),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Text(
+                          '100',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF9CA3AF),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
 
-                    Text(
-                      '$completedTasks of $totalTasks tasks completed',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF22C55E),
+                    const SizedBox(height: 18),
+
+                    // Completed Task Information
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF8F9FC),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            height: 42,
+                            width: 42,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFE8F5E9),
+                              borderRadius:
+                                  BorderRadius.circular(12),
+                            ),
+                            child: const Icon(
+                              Icons.check_rounded,
+                              color: Color(0xFF16A34A),
+                              size: 22,
+                            ),
+                          ),
+
+                          const SizedBox(width: 12),
+
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment:
+                                  CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Total tasks completed',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: Color(0xFF6B7280),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  '$completedTasks of ${tasks.length} tasks',
+                                  style: const TextStyle(
+                                    fontSize: 17,
+                                    color: Color(0xFF111827),
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
               ),
 
-              const SizedBox(height: 32),
+              const SizedBox(height: 30),
 
-              // =========================================================
-              // TODAY TASKS
-              // =========================================================
+              // ----------------------------------------------------------
+              // TODAY'S TASKS
+              // ----------------------------------------------------------
 
               Row(
                 mainAxisAlignment:
@@ -342,34 +391,74 @@ class _HomeScreenState extends State<HomeScreen> {
                   const Text(
                     "Today's Tasks",
                     style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF222222),
+                      fontSize: 21,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF111827),
                     ),
                   ),
 
                   Text(
-                    '${visibleTasks.length} tasks',
+                    '${filteredTasks.length} tasks',
                     style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF22C55E),
+                      fontSize: 13,
+                      color: Color(0xFF6B7280),
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
               ),
 
-              const SizedBox(height: 15),
+              const SizedBox(height: 14),
 
-              // =========================================================
-              // TASKS
-              // =========================================================
+              // ----------------------------------------------------------
+              // TASK LIST
+              // ----------------------------------------------------------
 
-              if (visibleTasks.isEmpty)
-                _emptyTasks()
+              if (filteredTasks.isEmpty)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 35,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Column(
+                    children: [
+                      Icon(
+                        Icons.task_alt_rounded,
+                        size: 45,
+                        color: Color(0xFFD1D5DB),
+                      ),
+                      SizedBox(height: 10),
+                      Text(
+                        'No tasks in this category',
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: Color(0xFF6B7280),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
               else
-                ...visibleTasks.map(
-                  (task) => _taskCard(task),
+                ...List.generate(
+                  filteredTasks.length,
+                  (index) {
+                    final task = filteredTasks[index];
+
+                    return Padding(
+                      padding: const EdgeInsets.only(
+                        bottom: 12,
+                      ),
+                      child: _buildTaskCard(
+                        task,
+                        index,
+                      ),
+                    );
+                  },
                 ),
             ],
           ),
@@ -378,67 +467,64 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // =====================================================================
+  // ----------------------------------------------------------
   // TASK CARD
-  // =====================================================================
+  // ----------------------------------------------------------
 
-  Widget _taskCard(
-    Map<String, dynamic> task,
+  Widget _buildTaskCard(
+    Task task,
+    int index,
   ) {
-    final bool completed =
-        task['completed'] == true;
-
     return Container(
-      margin: const EdgeInsets.only(
-        bottom: 12,
-      ),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: const Color(0xFFE6E6E6),
-        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.025),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
 
-          // Checkbox
+          // Check Button
           GestureDetector(
             onTap: () {
-              setState(() {
-                task['completed'] =
-                    !completed;
-              });
+              toggleTask(index);
             },
-            child: Container(
-              width: 26,
-              height: 26,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              height: 27,
+              width: 27,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: completed
-                    ? const Color(0xFF22C55E)
+                color: task.completed
+                    ? const Color(0xFF16A34A)
                     : Colors.transparent,
                 border: Border.all(
-                  color: completed
-                      ? const Color(0xFF22C55E)
-                      : const Color(0xFFAAAAAA),
-                  width: 1.5,
+                  color: task.completed
+                      ? const Color(0xFF16A34A)
+                      : const Color(0xFFD1D5DB),
+                  width: 2,
                 ),
               ),
-              child: completed
+              child: task.completed
                   ? const Icon(
                       Icons.check,
-                      color: Colors.white,
                       size: 17,
+                      color: Colors.white,
                     )
                   : null,
             ),
           ),
 
-          const SizedBox(width: 14),
+          const SizedBox(width: 13),
 
-          // Task information
+          // Task Details
           Expanded(
             child: Column(
               crossAxisAlignment:
@@ -446,48 +532,58 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
 
                 Text(
-                  task['title'],
+                  task.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: completed
-                        ? const Color(0xFF999999)
-                        : const Color(0xFF333333),
-                    decoration: completed
+                    fontWeight: FontWeight.w600,
+                    color: task.completed
+                        ? const Color(0xFF9CA3AF)
+                        : const Color(0xFF111827),
+                    decoration: task.completed
                         ? TextDecoration.lineThrough
-                        : null,
+                        : TextDecoration.none,
                   ),
                 ),
 
-                const SizedBox(height: 6),
+                const SizedBox(height: 7),
 
                 Row(
                   children: [
+                    const Icon(
+                      Icons.access_time_rounded,
+                      size: 14,
+                      color: Color(0xFF9CA3AF),
+                    ),
+                    const SizedBox(width: 4),
                     Text(
-                      task['category'],
+                      task.time,
                       style: const TextStyle(
                         fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF22C55E),
+                        color: Color(0xFF9CA3AF),
                       ),
                     ),
 
-                    const SizedBox(width: 7),
+                    const SizedBox(width: 10),
 
-                    const Text(
-                      '•',
-                      style: TextStyle(
-                        color: Color(0xFFBBBBBB),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
                       ),
-                    ),
-
-                    const SizedBox(width: 7),
-
-                    Text(
-                      task['time'],
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF999999),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF3F4F6),
+                        borderRadius:
+                            BorderRadius.circular(7),
+                      ),
+                      child: Text(
+                        task.category,
+                        style: const TextStyle(
+                          fontSize: 10,
+                          color: Color(0xFF6B7280),
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],
@@ -498,54 +594,53 @@ class _HomeScreenState extends State<HomeScreen> {
 
           const Icon(
             Icons.chevron_right_rounded,
-            color: Color(0xFFAAAAAA),
+            color: Color(0xFFD1D5DB),
           ),
         ],
       ),
     );
   }
 
-  // =====================================================================
-  // EMPTY TASK
-  // =====================================================================
+  // ----------------------------------------------------------
+  // ADD NEW MESSAGE
+  // ----------------------------------------------------------
 
-  Widget _emptyTasks() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(30),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: const Column(
-        children: [
-          Icon(
-            Icons.task_alt_rounded,
-            size: 45,
-            color: Color(0xFF22C55E),
-          ),
-          SizedBox(height: 12),
-          Text(
-            'No tasks here',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
+  void _showAddTaskMessage() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Add New Task selected'),
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }
 }
 
-// =======================================================================
-// PROGRESS TRACKER
-// =======================================================================
+// ============================================================================
+// TASK MODEL
+// ============================================================================
 
-class TodayProgressPainter extends CustomPainter {
+class Task {
+  final String title;
+  final String category;
+  final String time;
+  final bool completed;
+
+  Task({
+    required this.title,
+    required this.category,
+    required this.time,
+    required this.completed,
+  });
+}
+
+// ============================================================================
+// PROGRESS GAUGE PAINTER
+// ============================================================================
+
+class ProgressGaugePainter extends CustomPainter {
   final double progress;
 
-  TodayProgressPainter({
+  ProgressGaugePainter({
     required this.progress,
   });
 
@@ -554,137 +649,61 @@ class TodayProgressPainter extends CustomPainter {
     Canvas canvas,
     Size size,
   ) {
-    const double strokeWidth = 20;
-
-    final double centerX =
-        size.width / 2;
-
-    final double radius =
-        math.min(
-              size.width / 2,
-              size.height,
-            ) -
-            18;
-
-    final Offset center = Offset(
-      centerX,
-      size.height - 10,
+    final center = Offset(
+      size.width / 2,
+      size.height - 15,
     );
 
-    final Rect rect =
-        Rect.fromCircle(
-      center: center,
-      radius: radius,
-    );
+    final radius = size.width * 0.38;
 
-    // ================================================================
-    // GREY TRACK
-    // ================================================================
-
-    final Paint trackPaint = Paint()
-      ..color = const Color(0xFFE7E7E7)
+    final backgroundPaint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
+      ..strokeWidth = 18
+      ..strokeCap = StrokeCap.round
+      ..color = const Color(0xFFE9ECF2);
+
+    final progressPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 18
+      ..strokeCap = StrokeCap.round
+      ..color = const Color(0xFF111827);
+
+    // ----------------------------------------------------------
+    // HALF CIRCLE BACKGROUND
+    // ----------------------------------------------------------
 
     canvas.drawArc(
-      rect,
-      math.pi,
-      math.pi,
+      Rect.fromCircle(
+        center: center,
+        radius: radius,
+      ),
+      3.14159,
+      3.14159,
       false,
-      trackPaint,
+      backgroundPaint,
     );
 
-    // ================================================================
-    // GREEN PROGRESS
-    // ================================================================
-
-    final Paint progressPaint = Paint()
-      ..color = const Color(0xFF22C55E)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
+    // ----------------------------------------------------------
+    // PROGRESS
+    // ----------------------------------------------------------
 
     if (progress > 0) {
       canvas.drawArc(
-        rect,
-        math.pi,
-        math.pi * progress,
+        Rect.fromCircle(
+          center: center,
+          radius: radius,
+        ),
+        3.14159,
+        3.14159 * progress,
         false,
         progressPaint,
       );
     }
-
-    // ================================================================
-    // 0 LABEL
-    // ================================================================
-
-    const TextStyle labelStyle =
-        TextStyle(
-      fontSize: 13,
-      fontWeight: FontWeight.w700,
-      color: Color(0xFF999999),
-    );
-
-    _drawText(
-      canvas,
-      '0',
-      const Offset(12, -2),
-      labelStyle,
-    );
-
-    // ================================================================
-    // 100 LABEL
-    // ================================================================
-
-    final TextPainter hundredPainter =
-        TextPainter(
-      text: const TextSpan(
-        text: '100',
-        style: labelStyle,
-      ),
-      textDirection: TextDirection.ltr,
-    );
-
-    hundredPainter.layout();
-
-    hundredPainter.paint(
-      canvas,
-      Offset(
-        size.width -
-            hundredPainter.width -
-            12,
-        -2,
-      ),
-    );
-  }
-
-  void _drawText(
-    Canvas canvas,
-    String text,
-    Offset position,
-    TextStyle style,
-  ) {
-    final TextPainter painter =
-        TextPainter(
-      text: TextSpan(
-        text: text,
-        style: style,
-      ),
-      textDirection: TextDirection.ltr,
-    );
-
-    painter.layout();
-
-    painter.paint(
-      canvas,
-      position,
-    );
   }
 
   @override
   bool shouldRepaint(
-    covariant TodayProgressPainter oldDelegate,
+    covariant ProgressGaugePainter oldDelegate,
   ) {
     return oldDelegate.progress != progress;
   }
