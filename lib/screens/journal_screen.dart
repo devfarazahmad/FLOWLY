@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'new_journal_entry_screen.dart';
 
 class JournalScreen extends StatelessWidget {
   const JournalScreen({super.key});
@@ -8,179 +9,159 @@ class JournalScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F8FC),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(20),
+        child: Stack(
           children: [
-            const SizedBox(height: 10),
-
-            const Text(
-              'Journal',
-              style: TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF111827),
+            ListView(
+              padding: const EdgeInsets.fromLTRB(
+                20,
+                24,
+                20,
+                110,
               ),
-            ),
-
-            const SizedBox(height: 7),
-
-            const Text(
-              'Reflect, write, and reset.',
-              style: TextStyle(
-                fontSize: 16,
-                color: Color(0xFF6B7280),
-              ),
-            ),
-
-            const SizedBox(height: 28),
-
-            // Mood Card
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius:
-                    BorderRadius.circular(22),
-              ),
-              child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'How are you feeling today?',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF111827),
-                    ),
+              children: [
+                // Header
+                const Text(
+                  'Journal',
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF111827),
                   ),
+                ),
 
-                  const SizedBox(height: 20),
+                const SizedBox(height: 7),
 
-                  Row(
-                    mainAxisAlignment:
-                        MainAxisAlignment.spaceBetween,
+                const Text(
+                  'Reflect, write and reset',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Color(0xFF6B7280),
+                  ),
+                ),
+
+                const SizedBox(height: 26),
+
+                // Journal Image
+                Container(
+                  height: 250,
+                  width: double.infinity,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEDE9FE),
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  child: Image.asset(
+                    'assets/images/flowly_logo.png',
+                    fit: BoxFit.cover,
+                    errorBuilder: (
+                      context,
+                      error,
+                      stackTrace,
+                    ) {
+                      return const Column(
+                        mainAxisAlignment:
+                            MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.auto_stories_rounded,
+                            size: 60,
+                            color: Color(0xFF8B80C8),
+                          ),
+                          SizedBox(height: 12),
+                          Text(
+                            'Add your journal image',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Color(0xFF6B7280),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+
+                const SizedBox(height: 25),
+
+                // Intro Card
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(22),
+                  ),
+                  child: const Column(
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
                     children: [
-                      _mood('😄', 'Great'),
-                      _mood('😊', 'Good'),
-                      _mood('😐', 'Okay'),
-                      _mood('😔', 'Sad'),
-                      _mood('😴', 'Tired'),
+                      Text(
+                        'A little space for you',
+                        style: TextStyle(
+                          fontSize: 19,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF111827),
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        'Capture your thoughts, celebrate '
+                        'small moments, and make sense of '
+                        'your day.',
+                        style: TextStyle(
+                          fontSize: 14,
+                          height: 1.6,
+                          color: Color(0xFF6B7280),
+                        ),
+                      ),
                     ],
                   ),
-                ],
+                ),
+              ],
+            ),
+
+            // Start Writing Button
+            Positioned(
+              left: 20,
+              right: 20,
+              bottom: 20,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          const NewJournalEntryScreen(),
+                    ),
+                  );
+                },
+                icon: const Icon(
+                  Icons.edit_note_rounded,
+                  size: 23,
+                ),
+                label: const Text(
+                  'Start Writing',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                      const Color(0xFF111827),
+                  foregroundColor: Colors.white,
+                  elevation: 5,
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 17,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.circular(17),
+                  ),
+                ),
               ),
-            ),
-
-            const SizedBox(height: 20),
-
-            const Text(
-              'Recent Entries',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w800,
-                color: Color(0xFF111827),
-              ),
-            ),
-
-            const SizedBox(height: 14),
-
-            _journalCard(
-              'A productive day',
-              'Today I completed most of my important tasks.',
-              'Today',
-            ),
-
-            _journalCard(
-              'Small wins',
-              'I managed to stay focused and finish my work.',
-              'Yesterday',
-            ),
-
-            _journalCard(
-              'New beginning',
-              'Started working on my new daily routine.',
-              '2 days ago',
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _mood(
-    String emoji,
-    String title,
-  ) {
-    return Column(
-      children: [
-        Text(
-          emoji,
-          style: const TextStyle(
-            fontSize: 29,
-          ),
-        ),
-        const SizedBox(height: 5),
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 10,
-            color: Color(0xFF6B7280),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _journalCard(
-    String title,
-    String description,
-    String date,
-  ) {
-    return Container(
-      margin: const EdgeInsets.only(
-        bottom: 12,
-      ),
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius:
-            BorderRadius.circular(20),
-      ),
-      child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
-        children: [
-          Text(
-            date,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Color(0xFF22C55E),
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-
-          const SizedBox(height: 7),
-
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 17,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF111827),
-            ),
-          ),
-
-          const SizedBox(height: 7),
-
-          Text(
-            description,
-            style: const TextStyle(
-              fontSize: 14,
-              color: Color(0xFF6B7280),
-            ),
-          ),
-        ],
       ),
     );
   }
