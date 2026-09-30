@@ -1,11 +1,14 @@
-
-import 'package:flowly/onboarding_screen.dart';
+import 'package:flowly/database/auth_controller.dart';
+import 'package:flowly/intro_screen/onboarding_screen.dart';
 import 'package:flowly/splash_screen.dart';
 import 'package:flutter/material.dart';
-
+import 'package:get/get.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Register AuthController before the application starts.
+  Get.put(AuthController());
 
   runApp(const FlowlyApp());
 }
@@ -15,7 +18,7 @@ class FlowlyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       debugShowCheckedModeBanner: false,
 
       title: 'Flowly',
@@ -30,13 +33,20 @@ class FlowlyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
       ),
 
-      // First screen when the app opens
+      // ------------------------------------------------------------
+      // FIRST SCREEN
+      // ------------------------------------------------------------
       home: const SplashScreen(),
 
-      // App routes
-      routes: {
-        '/onboarding': (context) => const OnboardingScreen(),
-      },
+      // ------------------------------------------------------------
+      // GETX ROUTES
+      // ------------------------------------------------------------
+      getPages: [
+        GetPage(
+          name: '/onboarding',
+          page: () => const OnboardingScreen(),
+        ),
+      ],
     );
   }
 }

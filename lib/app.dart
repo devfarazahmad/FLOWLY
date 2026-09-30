@@ -1,5 +1,5 @@
 
-import 'package:flowly/onboarding_screen.dart';
+import 'package:flowly/intro_screen/onboarding_screen.dart';
 import 'package:flowly/splash_screen.dart';
 import 'package:flutter/material.dart';
 

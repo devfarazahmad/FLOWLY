@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'login_screen.dart';
+import 'package:get/get.dart';
+
+import '../login_screen.dart';
 
 class JournalIntroScreen extends StatelessWidget {
   const JournalIntroScreen({super.key});
@@ -9,13 +11,18 @@ class JournalIntroScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F7FC),
 
+      // ============================================================
+      // APP BAR
+      // ============================================================
+
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        surfaceTintColor: Colors.transparent,
 
         leading: IconButton(
           onPressed: () {
-            Navigator.pop(context);
+            Get.back();
           },
 
           icon: const Icon(
@@ -37,15 +44,20 @@ class JournalIntroScreen extends StatelessWidget {
         centerTitle: true,
       ),
 
+      // ============================================================
+      // BODY
+      // ============================================================
+
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 28),
 
           child: Column(
             children: [
-              // ------------------------------------------------
-              // Main Content
-              // ------------------------------------------------
+              // ======================================================
+              // MAIN CONTENT
+              // ======================================================
+
               Expanded(
                 child: Center(
                   child: Column(
@@ -53,8 +65,9 @@ class JournalIntroScreen extends StatelessWidget {
 
                     children: [
                       // ------------------------------------------------
-                      // Journal Image
+                      // LOGO
                       // ------------------------------------------------
+
                       Image.asset(
                         'assets/images/flowly_logo.png',
 
@@ -63,7 +76,11 @@ class JournalIntroScreen extends StatelessWidget {
 
                         fit: BoxFit.contain,
 
-                        errorBuilder: (context, error, stackTrace) {
+                        errorBuilder: (
+                          BuildContext context,
+                          Object error,
+                          StackTrace? stackTrace,
+                        ) {
                           return Container(
                             width: 150,
                             height: 150,
@@ -85,10 +102,12 @@ class JournalIntroScreen extends StatelessWidget {
                       const SizedBox(height: 30),
 
                       // ------------------------------------------------
-                      // First Text
+                      // TITLE
                       // ------------------------------------------------
+
                       const Text(
                         'Reflect and Reset',
+
                         textAlign: TextAlign.center,
 
                         style: TextStyle(
@@ -101,10 +120,12 @@ class JournalIntroScreen extends StatelessWidget {
                       const SizedBox(height: 14),
 
                       // ------------------------------------------------
-                      // Second Text
+                      // SUBTITLE
                       // ------------------------------------------------
+
                       const Text(
                         'A space just for you',
+
                         textAlign: TextAlign.center,
 
                         style: TextStyle(
@@ -117,11 +138,13 @@ class JournalIntroScreen extends StatelessWidget {
                       const SizedBox(height: 14),
 
                       // ------------------------------------------------
-                      // Third Text
+                      // DESCRIPTION
                       // ------------------------------------------------
+
                       const Text(
                         'Write it down, clear your mind, '
                         'keep the moments that matter to you.',
+
                         textAlign: TextAlign.center,
 
                         style: TextStyle(
@@ -135,9 +158,10 @@ class JournalIntroScreen extends StatelessWidget {
                 ),
               ),
 
-              // ------------------------------------------------
-              // Continue Button
-              // ------------------------------------------------
+              // ======================================================
+              // CONTINUE BUTTON
+              // ======================================================
+
               Padding(
                 padding: const EdgeInsets.only(bottom: 30),
 
@@ -147,17 +171,18 @@ class JournalIntroScreen extends StatelessWidget {
 
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const LoginScreen(),
-                        ),
+                      Get.to(
+                        () => const LoginScreen(),
                       );
                     },
 
                     style: ElevatedButton.styleFrom(
-                      backgroundColor:
-                          const Color.fromARGB(255, 12, 1, 31),
+                      backgroundColor: const Color.fromARGB(
+                        255,
+                        12,
+                        1,
+                        31,
+                      ),
 
                       foregroundColor: Colors.white,
 
