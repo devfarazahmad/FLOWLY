@@ -1,11 +1,14 @@
-import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
 
 class DatabaseHelper {
-  static final DatabaseHelper instance =
-      DatabaseHelper._internal();
+  static final DatabaseHelper instance = DatabaseHelper._internal();
 
   DatabaseHelper._internal();
+
+  factory DatabaseHelper() {
+    return instance;
+  }
 
   static Database? _database;
 
@@ -18,11 +21,14 @@ class DatabaseHelper {
     return _database!;
   }
 
-  Future<Database> _initDatabase() async {
-    final databasePath =
-        await getDatabasesPath();
+  // ============================================================
+  // INITIALIZE DATABASE
+  // ============================================================
 
-    final path = join(
+  Future<Database> _initDatabase() async {
+    final String databasePath = await getDatabasesPath();
+
+    final String path = join(
       databasePath,
       'flowly.db',
     );
@@ -30,35 +36,26 @@ class DatabaseHelper {
     return await openDatabase(
       path,
       version: 1,
-      onCreate: _createDatabase,
+      onCreate: (db, version) async {
+        await db.execute('''
+          CREATE TABLE users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            email TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            created_at TEXT NOT NULL
+          )
+        ''');
+      },
     );
   }
 
-  // --------------------------------------------------------------------------
-  // CREATE DATABASE
-  // --------------------------------------------------------------------------
-
-  Future<void> _createDatabase(
-    Database db,
-    int version,
-  ) async {
-    await db.execute('''
-      CREATE TABLE users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        email TEXT NOT NULL UNIQUE,
-        password TEXT NOT NULL,
-        created_at TEXT NOT NULL
-      )
-    ''');
-  }
-
-  // --------------------------------------------------------------------------
+  // ============================================================
   // CREATE USER
-  // --------------------------------------------------------------------------
+  // ============================================================
 
   Future<int> createUser({
-    required String name,
+    String? name,
     required String email,
     required String password,
   }) async {
@@ -67,20 +64,35 @@ class DatabaseHelper {
     return await db.insert(
       'users',
       {
-        'name': name,
+        'name': name ?? '',
         'email': email,
         'password': password,
-        'created_at':
-            DateTime.now().toIso8601String(),
+        'created_at': DateTime.now().toIso8601String(),
       },
-      conflictAlgorithm:
-          ConflictAlgorithm.abort,
+      conflictAlgorithm: ConflictAlgorithm.abort,
     );
   }
 
-  // --------------------------------------------------------------------------
+  // ============================================================
+  // CHECK EMAIL
+  // ============================================================
+
+  Future<bool> emailExists(String email) async {
+    final db = await database;
+
+    final List<Map<String, dynamic>> result = await db.query(
+      'users',
+      where: 'email = ?',
+      whereArgs: [email],
+      limit: 1,
+    );
+
+    return result.isNotEmpty;
+  }
+
+  // ============================================================
   // LOGIN USER
-  // --------------------------------------------------------------------------
+  // ============================================================
 
   Future<Map<String, dynamic>?> loginUser({
     required String email,
@@ -88,7 +100,7 @@ class DatabaseHelper {
   }) async {
     final db = await database;
 
-    final result = await db.query(
+    final List<Map<String, dynamic>> result = await db.query(
       'users',
       where: 'email = ? AND password = ?',
       whereArgs: [
@@ -105,36 +117,14 @@ class DatabaseHelper {
     return result.first;
   }
 
-  // --------------------------------------------------------------------------
-  // CHECK EMAIL
-  // --------------------------------------------------------------------------
-
-  Future<bool> emailExists(
-    String email,
-  ) async {
-    final db = await database;
-
-    final result = await db.query(
-      'users',
-      columns: ['id'],
-      where: 'email = ?',
-      whereArgs: [email],
-      limit: 1,
-    );
-
-    return result.isNotEmpty;
-  }
-
-  // --------------------------------------------------------------------------
+  // ============================================================
   // GET USER BY ID
-  // --------------------------------------------------------------------------
+  // ============================================================
 
-  Future<Map<String, dynamic>?> getUserById(
-    int id,
-  ) async {
+  Future<Map<String, dynamic>?> getUserById(int id) async {
     final db = await database;
 
-    final result = await db.query(
+    final List<Map<String, dynamic>> result = await db.query(
       'users',
       where: 'id = ?',
       whereArgs: [id],
@@ -148,9 +138,9 @@ class DatabaseHelper {
     return result.first;
   }
 
-  // --------------------------------------------------------------------------
+  // ============================================================
   // GET ALL USERS
-  // --------------------------------------------------------------------------
+  // ============================================================
 
   Future<List<Map<String, dynamic>>> getUsers() async {
     final db = await database;
@@ -161,9 +151,9 @@ class DatabaseHelper {
     );
   }
 
-  // --------------------------------------------------------------------------
+  // ============================================================
   // DELETE USER
-  // --------------------------------------------------------------------------
+  // ============================================================
 
   Future<int> deleteUser(int id) async {
     final db = await database;
