@@ -19,9 +19,9 @@ class _MainNavigationScreenState
     extends State<MainNavigationScreen> {
   int currentIndex = 0;
 
-  // ------------------------------------------------------------
+  // ============================================================
   // ALL SCREENS
-  // ------------------------------------------------------------
+  // ============================================================
 
   final List<Widget> screens = const [
     HomeScreen(),
@@ -35,18 +35,18 @@ class _MainNavigationScreenState
     return Scaffold(
       backgroundColor: const Color(0xFFF7F8FC),
 
-      // --------------------------------------------------------
+      // ========================================================
       // CURRENT SCREEN
-      // --------------------------------------------------------
+      // ========================================================
 
       body: IndexedStack(
         index: currentIndex,
         children: screens,
       ),
 
-      // --------------------------------------------------------
+      // ========================================================
       // BOTTOM NAVIGATION
-      // --------------------------------------------------------
+      // ========================================================
 
       bottomNavigationBar: NavigationBar(
         selectedIndex: currentIndex,
@@ -66,10 +66,6 @@ class _MainNavigationScreenState
         indicatorColor: const Color(0xFFE8F5E9),
 
         destinations: const [
-          // ----------------------------------------------------
-          // HOME
-          // ----------------------------------------------------
-
           NavigationDestination(
             icon: Icon(
               Icons.home_outlined,
@@ -81,10 +77,6 @@ class _MainNavigationScreenState
             ),
             label: 'Home',
           ),
-
-          // ----------------------------------------------------
-          // TO DO
-          // ----------------------------------------------------
 
           NavigationDestination(
             icon: Icon(
@@ -98,10 +90,6 @@ class _MainNavigationScreenState
             label: 'To Do',
           ),
 
-          // ----------------------------------------------------
-          // JOURNAL
-          // ----------------------------------------------------
-
           NavigationDestination(
             icon: Icon(
               Icons.menu_book_outlined,
@@ -113,10 +101,6 @@ class _MainNavigationScreenState
             ),
             label: 'Journal',
           ),
-
-          // ----------------------------------------------------
-          // CHALLENGES
-          // ----------------------------------------------------
 
           NavigationDestination(
             icon: Icon(

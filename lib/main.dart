@@ -7,10 +7,15 @@ import 'package:get/get.dart';
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Register AuthController before the application starts.
-  Get.put(AuthController());
+  // Register authentication controller.
+  Get.put(
+    AuthController(),
+    permanent: true,
+  );
 
-  runApp(const FlowlyApp());
+  runApp(
+    const FlowlyApp(),
+  );
 }
 
 class FlowlyApp extends StatelessWidget {
@@ -33,14 +38,8 @@ class FlowlyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
       ),
 
-      // ------------------------------------------------------------
-      // FIRST SCREEN
-      // ------------------------------------------------------------
       home: const SplashScreen(),
 
-      // ------------------------------------------------------------
-      // GETX ROUTES
-      // ------------------------------------------------------------
       getPages: [
         GetPage(
           name: '/onboarding',

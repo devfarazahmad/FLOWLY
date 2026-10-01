@@ -1,4 +1,5 @@
 import 'package:flowly/database/auth_controller.dart';
+import 'package:flowly/screens/signup_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -24,8 +25,6 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     super.initState();
 
-    // Get existing controller.
-    // If it somehow wasn't registered, register it here.
     if (Get.isRegistered<AuthController>()) {
       authController = Get.find<AuthController>();
     } else {
@@ -40,9 +39,9 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // ================================================================
+  // ============================================================
   // LOGIN
-  // ================================================================
+  // ============================================================
 
   void _login() {
     FocusScope.of(context).unfocus();
@@ -58,9 +57,9 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F7FC),
 
-      // ============================================================
+      // ========================================================
       // APP BAR
-      // ============================================================
+      // ========================================================
 
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -81,7 +80,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
         title: const Text(
           'Flowly',
-
           style: TextStyle(
             color: Color(0xFF222222),
             fontSize: 20,
@@ -92,9 +90,9 @@ class _LoginScreenState extends State<LoginScreen> {
         centerTitle: true,
       ),
 
-      // ============================================================
+      // ========================================================
       // BODY
-      // ============================================================
+      // ========================================================
 
       body: SafeArea(
         child: SingleChildScrollView(
@@ -106,17 +104,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-
               children: [
                 const SizedBox(height: 45),
 
-                // ==================================================
-                // WELCOME
-                // ==================================================
-
                 const Text(
                   'Welcome back!',
-
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.w800,
@@ -128,7 +120,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const Text(
                   'Let’s make your day flow.',
-
                   style: TextStyle(
                     fontSize: 16,
                     color: Color(0xFF777777),
@@ -143,7 +134,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const Text(
                   'Email',
-
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -155,9 +145,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 TextField(
                   controller: emailController,
-
-                  keyboardType: TextInputType.emailAddress,
-
+                  keyboardType:
+                      TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
 
                   decoration: InputDecoration(
@@ -176,24 +165,27 @@ class _LoginScreenState extends State<LoginScreen> {
                     filled: true,
                     fillColor: Colors.white,
 
-                    contentPadding: const EdgeInsets.symmetric(
+                    contentPadding:
+                        const EdgeInsets.symmetric(
                       horizontal: 18,
                       vertical: 17,
                     ),
 
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius:
+                          BorderRadius.circular(16),
                       borderSide: BorderSide.none,
                     ),
 
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius:
+                          BorderRadius.circular(16),
                       borderSide: BorderSide.none,
                     ),
 
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-
+                      borderRadius:
+                          BorderRadius.circular(16),
                       borderSide: const BorderSide(
                         color: Color(0xFF22C55E),
                         width: 1.5,
@@ -210,7 +202,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const Text(
                   'Password',
-
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
@@ -222,10 +213,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 TextField(
                   controller: passwordController,
-
                   obscureText: obscurePassword,
-
-                  textInputAction: TextInputAction.done,
+                  textInputAction:
+                      TextInputAction.done,
 
                   onSubmitted: (_) {
                     _login();
@@ -247,7 +237,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     suffixIcon: IconButton(
                       onPressed: () {
                         setState(() {
-                          obscurePassword = !obscurePassword;
+                          obscurePassword =
+                              !obscurePassword;
                         });
                       },
 
@@ -255,32 +246,35 @@ class _LoginScreenState extends State<LoginScreen> {
                         obscurePassword
                             ? Icons.visibility_outlined
                             : Icons.visibility_off_outlined,
-
-                        color: const Color(0xFF888888),
+                        color:
+                            const Color(0xFF888888),
                       ),
                     ),
 
                     filled: true,
                     fillColor: Colors.white,
 
-                    contentPadding: const EdgeInsets.symmetric(
+                    contentPadding:
+                        const EdgeInsets.symmetric(
                       horizontal: 18,
                       vertical: 17,
                     ),
 
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius:
+                          BorderRadius.circular(16),
                       borderSide: BorderSide.none,
                     ),
 
                     enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius:
+                          BorderRadius.circular(16),
                       borderSide: BorderSide.none,
                     ),
 
                     focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
-
+                      borderRadius:
+                          BorderRadius.circular(16),
                       borderSide: const BorderSide(
                         color: Color(0xFF22C55E),
                         width: 1.5,
@@ -303,21 +297,20 @@ class _LoginScreenState extends State<LoginScreen> {
                       Get.snackbar(
                         'Forgot Password',
                         'Password recovery will be added later.',
-                        snackPosition: SnackPosition.BOTTOM,
+                        snackPosition:
+                            SnackPosition.BOTTOM,
                       );
                     },
 
                     style: TextButton.styleFrom(
                       padding: EdgeInsets.zero,
                       minimumSize: Size.zero,
-
                       tapTargetSize:
                           MaterialTapTargetSize.shrinkWrap,
                     ),
 
                     child: const Text(
                       'Forgot password?',
-
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -343,10 +336,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       height: 58,
 
                       child: ElevatedButton(
-                        onPressed: loading ? null : _login,
+                        onPressed:
+                            loading ? null : _login,
 
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color.fromARGB(
+                        style:
+                            ElevatedButton.styleFrom(
+                          backgroundColor:
+                              const Color.fromARGB(
                             255,
                             12,
                             1,
@@ -360,8 +356,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
                           elevation: 0,
 
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18),
+                          shape:
+                              RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.circular(18),
                           ),
                         ),
 
@@ -369,18 +367,18 @@ class _LoginScreenState extends State<LoginScreen> {
                             ? const SizedBox(
                                 width: 24,
                                 height: 24,
-
-                                child: CircularProgressIndicator(
+                                child:
+                                    CircularProgressIndicator(
                                   strokeWidth: 2.5,
                                   color: Colors.white,
                                 ),
                               )
                             : const Text(
                                 'Login',
-
                                 style: TextStyle(
                                   fontSize: 17,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight:
+                                      FontWeight.w700,
                                 ),
                               ),
                       ),
@@ -409,16 +407,17 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
 
                     Padding(
-                      padding: const EdgeInsets.symmetric(
+                      padding:
+                          const EdgeInsets.symmetric(
                         horizontal: 15,
                       ),
 
                       child: Text(
                         'OR',
-
                         style: TextStyle(
                           fontSize: 13,
-                          fontWeight: FontWeight.w600,
+                          fontWeight:
+                              FontWeight.w600,
                           color: Colors.grey.shade500,
                         ),
                       ),
@@ -446,12 +445,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 Center(
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment:
+                        MainAxisAlignment.center,
 
                     children: [
                       const Text(
                         'Don’t have an account? ',
-
                         style: TextStyle(
                           fontSize: 14,
                           color: Color(0xFF777777),
@@ -460,19 +459,17 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       GestureDetector(
                         onTap: () {
-                          Get.snackbar(
-                            'Sign Up',
-                            'Create Account screen will be added next.',
-                            snackPosition: SnackPosition.BOTTOM,
+                          Get.to(
+                            () => const SignupScreen(),
                           );
                         },
 
                         child: const Text(
                           'Sign up',
-
                           style: TextStyle(
                             fontSize: 14,
-                            fontWeight: FontWeight.w700,
+                            fontWeight:
+                                FontWeight.w700,
                             color: Color(0xFF22C55E),
                           ),
                         ),
