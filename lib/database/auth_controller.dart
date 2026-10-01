@@ -85,7 +85,7 @@ class AuthController extends GetxController {
       // Create account.
       await databaseHelper.createUser(
         email: cleanEmail,
-        password: password,
+        password: password, name: '',
       );
 
       Get.snackbar(
