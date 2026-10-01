@@ -1,21 +1,28 @@
+import 'dart:convert';
+
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 class DatabaseHelper {
-  static final DatabaseHelper instance = DatabaseHelper._internal();
+  static final DatabaseHelper instance =
+      DatabaseHelper._internal();
 
-  factory DatabaseHelper() => instance;
+  factory DatabaseHelper() {
+    return instance;
+  }
 
   DatabaseHelper._internal();
 
   static Database? _database;
 
   static const String _databaseName = 'flowly.db';
+
+  // Increase this whenever we change the database structure.
   static const int _databaseVersion = 3;
 
-  // --------------------------------------------------------------------------
-  // DATABASE INSTANCE
-  // --------------------------------------------------------------------------
+  // ==========================================================================
+  // DATABASE
+  // ==========================================================================
 
   Future<Database> get database async {
     if (_database != null) {
@@ -23,16 +30,17 @@ class DatabaseHelper {
     }
 
     _database = await _initDatabase();
+
     return _database!;
   }
 
-  // --------------------------------------------------------------------------
-  // INITIALIZE DATABASE
-  // --------------------------------------------------------------------------
-
   Future<Database> _initDatabase() async {
     final databasePath = await getDatabasesPath();
-    final path = join(databasePath, _databaseName);
+
+    final path = join(
+      databasePath,
+      _databaseName,
+    );
 
     return await openDatabase(
       path,
@@ -42,15 +50,18 @@ class DatabaseHelper {
     );
   }
 
-  // --------------------------------------------------------------------------
+  // ==========================================================================
   // CREATE DATABASE
-  // --------------------------------------------------------------------------
+  // ==========================================================================
 
   Future<void> _onCreate(
     Database db,
     int version,
   ) async {
-    // USERS TABLE
+    // ------------------------------------------------------------------------
+    // USERS
+    // ------------------------------------------------------------------------
+
     await db.execute('''
       CREATE TABLE users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -61,81 +72,135 @@ class DatabaseHelper {
       )
     ''');
 
-    // DAILY ENTRIES TABLE
+    // ------------------------------------------------------------------------
+    // DAILY / TO-DO ENTRIES
+    // ------------------------------------------------------------------------
+
     await db.execute('''
       CREATE TABLE daily_entries (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+
         user_id INTEGER NOT NULL,
+
         entry_date TEXT NOT NULL,
+
         mood TEXT,
+
         gratitude TEXT,
-        tasks TEXT,
-        goals TEXT,
-        wrong TEXT,
-        learned TEXT,
+
+        today_tasks TEXT,
+
+        future_goals TEXT,
+
+        wrong_today TEXT,
+
+        learned_today TEXT,
+
         lesson TEXT,
+
         updated_at TEXT,
+
         UNIQUE(user_id, entry_date)
       )
     ''');
 
-    // JOURNAL ENTRIES TABLE
+    // ------------------------------------------------------------------------
+    // JOURNAL ENTRIES
+    // ------------------------------------------------------------------------
+
     await db.execute('''
       CREATE TABLE journal_entries (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+
         user_id INTEGER NOT NULL,
+
         title TEXT NOT NULL,
+
         thoughts TEXT NOT NULL,
+
         mood_emoji TEXT NOT NULL,
+
         mood_name TEXT NOT NULL,
+
         entry_day TEXT NOT NULL,
+
         entry_date TEXT NOT NULL,
+
         created_at TEXT NOT NULL,
+
         updated_at TEXT NOT NULL
       )
     ''');
   }
 
-  // --------------------------------------------------------------------------
-  // DATABASE UPDATES
-  // --------------------------------------------------------------------------
+  // ==========================================================================
+  // DATABASE UPGRADE
+  // ==========================================================================
 
   Future<void> _onUpgrade(
     Database db,
     int oldVersion,
     int newVersion,
   ) async {
+    // ------------------------------------------------------------------------
+    // VERSION 2
+    // ------------------------------------------------------------------------
+
     if (oldVersion < 2) {
       await db.execute('''
         CREATE TABLE IF NOT EXISTS daily_entries (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
+
           user_id INTEGER NOT NULL,
+
           entry_date TEXT NOT NULL,
+
           mood TEXT,
+
           gratitude TEXT,
-          tasks TEXT,
-          goals TEXT,
-          wrong TEXT,
-          learned TEXT,
+
+          today_tasks TEXT,
+
+          future_goals TEXT,
+
+          wrong_today TEXT,
+
+          learned_today TEXT,
+
           lesson TEXT,
+
           updated_at TEXT,
+
           UNIQUE(user_id, entry_date)
         )
       ''');
     }
 
+    // ------------------------------------------------------------------------
+    // VERSION 3
+    // ------------------------------------------------------------------------
+
     if (oldVersion < 3) {
       await db.execute('''
         CREATE TABLE IF NOT EXISTS journal_entries (
           id INTEGER PRIMARY KEY AUTOINCREMENT,
+
           user_id INTEGER NOT NULL,
+
           title TEXT NOT NULL,
+
           thoughts TEXT NOT NULL,
+
           mood_emoji TEXT NOT NULL,
+
           mood_name TEXT NOT NULL,
+
           entry_day TEXT NOT NULL,
+
           entry_date TEXT NOT NULL,
+
           created_at TEXT NOT NULL,
+
           updated_at TEXT NOT NULL
         )
       ''');
@@ -159,7 +224,8 @@ class DatabaseHelper {
         'name': name,
         'email': email,
         'password': password,
-        'created_at': DateTime.now().toIso8601String(),
+        'created_at':
+            DateTime.now().toIso8601String(),
       },
     );
   }
@@ -187,7 +253,9 @@ class DatabaseHelper {
     return result.first;
   }
 
-  Future<bool> emailExists(String email) async {
+  Future<bool> emailExists(
+    String email,
+  ) async {
     final db = await database;
 
     final result = await db.query(
@@ -220,46 +288,51 @@ class DatabaseHelper {
     return result.first;
   }
 
-  Future<List<Map<String, dynamic>>> getUsers() async {
-    final db = await database;
-
-    return await db.query(
-      'users',
-      orderBy: 'id DESC',
-    );
-  }
-
-  Future<int> deleteUser(int id) async {
-    final db = await database;
-
-    return await db.delete(
-      'users',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
-
   // ==========================================================================
-  // DAILY ENTRY METHODS
+  // SAVE TODAY / TO-DO
   // ==========================================================================
 
-  Future<int> saveDailyEntry({
+  Future<int> saveTodayEntry({
     required int userId,
     required String entryDate,
     required String mood,
-    required String gratitude,
-    required String tasks,
-    required String goals,
-    required String wrong,
-    required String learned,
+    required List<String> gratitude,
+    required List<String> todayTasks,
+    required List<String> futureGoals,
+    required List<String> wrongToday,
+    required List<String> learnedToday,
     required String lesson,
   }) async {
     final db = await database;
 
+    // ----------------------------------------------------------
+    // Convert lists into JSON strings.
+    // ----------------------------------------------------------
+
+    final String gratitudeJson =
+        jsonEncode(gratitude);
+
+    final String todayTasksJson =
+        jsonEncode(todayTasks);
+
+    final String futureGoalsJson =
+        jsonEncode(futureGoals);
+
+    final String wrongTodayJson =
+        jsonEncode(wrongToday);
+
+    final String learnedTodayJson =
+        jsonEncode(learnedToday);
+
+    // ----------------------------------------------------------
+    // Check whether today's record already exists.
+    // ----------------------------------------------------------
+
     final existing = await db.query(
       'daily_entries',
       columns: ['id'],
-      where: 'user_id = ? AND entry_date = ?',
+      where:
+          'user_id = ? AND entry_date = ?',
       whereArgs: [
         userId,
         entryDate,
@@ -267,27 +340,38 @@ class DatabaseHelper {
       limit: 1,
     );
 
-    final data = {
+    final Map<String, dynamic> data = {
       'user_id': userId,
       'entry_date': entryDate,
       'mood': mood,
-      'gratitude': gratitude,
-      'tasks': tasks,
-      'goals': goals,
-      'wrong': wrong,
-      'learned': learned,
+      'gratitude': gratitudeJson,
+      'today_tasks': todayTasksJson,
+      'future_goals': futureGoalsJson,
+      'wrong_today': wrongTodayJson,
+      'learned_today': learnedTodayJson,
       'lesson': lesson,
-      'updated_at': DateTime.now().toIso8601String(),
+      'updated_at':
+          DateTime.now().toIso8601String(),
     };
+
+    // ----------------------------------------------------------
+    // UPDATE existing day
+    // ----------------------------------------------------------
 
     if (existing.isNotEmpty) {
       return await db.update(
         'daily_entries',
         data,
         where: 'id = ?',
-        whereArgs: [existing.first['id']],
+        whereArgs: [
+          existing.first['id'],
+        ],
       );
     }
+
+    // ----------------------------------------------------------
+    // INSERT new day
+    // ----------------------------------------------------------
 
     return await db.insert(
       'daily_entries',
@@ -295,7 +379,11 @@ class DatabaseHelper {
     );
   }
 
-  Future<Map<String, dynamic>?> getDailyEntry({
+  // ==========================================================================
+  // GET TODAY / TO-DO
+  // ==========================================================================
+
+  Future<Map<String, dynamic>?> getTodayEntry({
     required int userId,
     required String entryDate,
   }) async {
@@ -303,7 +391,8 @@ class DatabaseHelper {
 
     final result = await db.query(
       'daily_entries',
-      where: 'user_id = ? AND entry_date = ?',
+      where:
+          'user_id = ? AND entry_date = ?',
       whereArgs: [
         userId,
         entryDate,
@@ -319,7 +408,7 @@ class DatabaseHelper {
   }
 
   // ==========================================================================
-  // JOURNAL METHODS
+  // JOURNAL
   // ==========================================================================
 
   Future<int> saveJournalEntry({
@@ -333,7 +422,8 @@ class DatabaseHelper {
   }) async {
     final db = await database;
 
-    final now = DateTime.now().toIso8601String();
+    final now =
+        DateTime.now().toIso8601String();
 
     return await db.insert(
       'journal_entries',
@@ -351,8 +441,8 @@ class DatabaseHelper {
     );
   }
 
-  // Get all journal entries for the logged-in user
-  Future<List<Map<String, dynamic>>> getJournalEntries({
+  Future<List<Map<String, dynamic>>>
+      getJournalEntries({
     required int userId,
   }) async {
     final db = await database;
@@ -365,27 +455,6 @@ class DatabaseHelper {
     );
   }
 
-  // Get one journal entry
-  Future<Map<String, dynamic>?> getJournalEntryById(
-    int id,
-  ) async {
-    final db = await database;
-
-    final result = await db.query(
-      'journal_entries',
-      where: 'id = ?',
-      whereArgs: [id],
-      limit: 1,
-    );
-
-    if (result.isEmpty) {
-      return null;
-    }
-
-    return result.first;
-  }
-
-  // Delete journal entry
   Future<int> deleteJournalEntry(
     int id,
   ) async {
@@ -397,8 +466,4 @@ class DatabaseHelper {
       whereArgs: [id],
     );
   }
-
-  Future<dynamic> getTodayEntry({required int userId, required String entryDate}) async {}
-
-  Future<void> saveTodayEntry({required int userId, required String entryDate, required String mood, required List<String> gratitude, required List<String> todayTasks, required List<String> futureGoals, required List<String> wrongToday, required List<String> learnedToday, required String lesson}) async {}
 }

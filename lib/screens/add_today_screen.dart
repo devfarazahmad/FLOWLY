@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flowly/database/auth_controller.dart';
 import 'package:flowly/database/database_helper.dart';
 import 'package:flutter/material.dart';
@@ -15,9 +17,9 @@ class AddTodayScreen extends StatefulWidget {
 
 class _AddTodayScreenState
     extends State<AddTodayScreen> {
-  // ============================================================
+  // ==========================================================================
   // CONTROLLERS
-  // ============================================================
+  // ==========================================================================
 
   final TextEditingController moodController =
       TextEditingController();
@@ -60,18 +62,18 @@ class _AddTodayScreenState
     (index) => TextEditingController(),
   );
 
-  // ============================================================
+  // ==========================================================================
   // DATABASE
-  // ============================================================
+  // ==========================================================================
 
   final DatabaseHelper databaseHelper =
       DatabaseHelper.instance;
 
   late final AuthController authController;
 
-  // ============================================================
+  // ==========================================================================
   // STATE
-  // ============================================================
+  // ==========================================================================
 
   bool isEditing = true;
 
@@ -79,9 +81,11 @@ class _AddTodayScreenState
 
   bool hasSavedData = false;
 
-  // ============================================================
+  bool isSaving = false;
+
+  // ==========================================================================
   // INIT
-  // ============================================================
+  // ==========================================================================
 
   @override
   void initState() {
@@ -98,9 +102,9 @@ class _AddTodayScreenState
     _loadTodayData();
   }
 
-  // ============================================================
+  // ==========================================================================
   // DISPOSE
-  // ============================================================
+  // ==========================================================================
 
   @override
   void dispose() {
@@ -135,23 +139,32 @@ class _AddTodayScreenState
     super.dispose();
   }
 
-  // ============================================================
+  // ==========================================================================
   // USER ID
-  // ============================================================
+  // ==========================================================================
 
   int? get currentUserId {
-    final user = authController.currentUser.value;
+    final user =
+        authController.currentUser.value;
 
     if (user == null) {
       return null;
     }
 
-    return user['id'] as int?;
+    final dynamic id = user['id'];
+
+    if (id is int) {
+      return id;
+    }
+
+    return int.tryParse(
+      id.toString(),
+    );
   }
 
-  // ============================================================
-  // DATE KEY
-  // ============================================================
+  // ==========================================================================
+  // TODAY DATE KEY
+  // ==========================================================================
 
   String get todayDateKey {
     final now = DateTime.now();
@@ -165,9 +178,9 @@ class _AddTodayScreenState
     return '${now.year}-$month-$day';
   }
 
-  // ============================================================
+  // ==========================================================================
   // TODAY DAY
-  // ============================================================
+  // ==========================================================================
 
   String get todayDay {
     final now = DateTime.now();
@@ -185,9 +198,9 @@ class _AddTodayScreenState
     return days[now.weekday - 1];
   }
 
-  // ============================================================
+  // ==========================================================================
   // TODAY DATE
-  // ============================================================
+  // ==========================================================================
 
   String get todayDate {
     final now = DateTime.now();
@@ -212,14 +225,17 @@ class _AddTodayScreenState
         '${now.year}';
   }
 
-  // ============================================================
-  // LOAD TODAY DATA
-  // ============================================================
+  // ==========================================================================
+  // LOAD TODAY
+  // ==========================================================================
 
   Future<void> _loadTodayData() async {
-    final int? userId = currentUserId;
+    final int? userId =
+        currentUserId;
 
     if (userId == null) {
+      if (!mounted) return;
+
       setState(() {
         isLoading = false;
       });
@@ -239,7 +255,12 @@ class _AddTodayScreenState
 
         hasSavedData = true;
 
+        // Existing saved data starts
+        // in read-only mode.
         isEditing = false;
+      } else {
+        hasSavedData = false;
+        isEditing = true;
       }
     } catch (e) {
       debugPrint(
@@ -247,16 +268,16 @@ class _AddTodayScreenState
       );
     }
 
-    if (mounted) {
-      setState(() {
-        isLoading = false;
-      });
-    }
+    if (!mounted) return;
+
+    setState(() {
+      isLoading = false;
+    });
   }
 
-  // ============================================================
+  // ==========================================================================
   // FILL CONTROLLERS
-  // ============================================================
+  // ==========================================================================
 
   void _fillControllers(
     Map<String, dynamic> data,
@@ -293,82 +314,68 @@ class _AddTodayScreenState
     );
   }
 
-  // ============================================================
+  // ==========================================================================
   // FILL LIST
-  // ============================================================
+  // ==========================================================================
 
   void _fillList(
     dynamic value,
     List<TextEditingController>
         controllers,
   ) {
+    // Clear previous values first.
+    for (final controller
+        in controllers) {
+      controller.clear();
+    }
+
     if (value == null) {
       return;
     }
 
     try {
-      final List<dynamic> list =
-          value is String
-              ? List<dynamic>.from(
-                  _decodeJson(value),
-                )
-              : List<dynamic>.from(value);
+      List<dynamic> list = [];
+
+      if (value is String) {
+        if (value.trim().isEmpty) {
+          return;
+        }
+
+        final decoded =
+            jsonDecode(value);
+
+        if (decoded is List) {
+          list = decoded;
+        }
+      } else if (value is List) {
+        list = value;
+      }
 
       for (int i = 0;
-          i < controllers.length;
+          i < controllers.length &&
+              i < list.length;
           i++) {
-        if (i < list.length) {
-          controllers[i].text =
-              list[i]?.toString() ?? '';
-        }
+        controllers[i].text =
+            list[i]?.toString() ?? '';
       }
     } catch (e) {
       debugPrint(
-        'Error loading list: $e',
+        'Error decoding saved list: $e',
       );
     }
   }
 
-  List<dynamic> _decodeJson(
-    String value,
-  ) {
-    try {
-      return value.isEmpty
-          ? []
-          : List<dynamic>.from(
-              // ignore: avoid_dynamic_calls
-              _jsonDecode(value),
-            );
-    } catch (_) {
-      return [];
-    }
-  }
-
-  dynamic _jsonDecode(String value) {
-    // Using dart:convert through a local helper
-    // would be cleaner, but this keeps this screen
-    // simple.
-    //
-    // The database stores valid JSON arrays.
-    return value.isEmpty ? [] : _decode(value);
-  }
-
-  dynamic _decode(String value) {
-    // This function is replaced below by the
-    // standard JSON decoder import.
-    return [];
-  }
-
-  // ============================================================
+  // ==========================================================================
   // SAVE TODAY
-  // ============================================================
+  // ==========================================================================
 
   Future<void> _saveToday({
     bool closeAfterSave = false,
   }) async {
     FocusScope.of(context).unfocus();
 
-    final int? userId = currentUserId;
+    final int? userId =
+        currentUserId;
 
     if (userId == null) {
       ScaffoldMessenger.of(context)
@@ -383,7 +390,12 @@ class _AddTodayScreenState
       return;
     }
 
+    if (isSaving) {
+      return;
+    }
+
     setState(() {
+      isSaving = true;
       isLoading = true;
     });
 
@@ -393,7 +405,8 @@ class _AddTodayScreenState
 
         entryDate: todayDateKey,
 
-        mood: moodController.text.trim(),
+        mood:
+            moodController.text.trim(),
 
         gratitude:
             gratitudeControllers
@@ -441,9 +454,14 @@ class _AddTodayScreenState
 
       hasSavedData = true;
 
-      if (closeAfterSave) {
-        if (!mounted) return;
+      if (!mounted) return;
 
+      // ------------------------------------------------------------
+      // Return to To-Do after Save Today.
+      // The result true tells TodoScreen to reload SQLite.
+      // ------------------------------------------------------------
+
+      if (closeAfterSave) {
         Navigator.pop(
           context,
           true,
@@ -454,6 +472,7 @@ class _AddTodayScreenState
 
       setState(() {
         isEditing = false;
+        isSaving = false;
         isLoading = false;
       });
 
@@ -470,26 +489,27 @@ class _AddTodayScreenState
         'Error saving today: $e',
       );
 
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
+      if (!mounted) return;
 
-        ScaffoldMessenger.of(context)
-            .showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Unable to save today\'s information.',
-            ),
+      setState(() {
+        isSaving = false;
+        isLoading = false;
+      });
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        SnackBar(
+          content: Text(
+            'Unable to save today\'s information: $e',
           ),
-        );
-      }
+        ),
+      );
     }
   }
 
-  // ============================================================
+  // ==========================================================================
   // BUILD
-  // ============================================================
+  // ==========================================================================
 
   @override
   Widget build(BuildContext context) {
@@ -501,7 +521,9 @@ class _AddTodayScreenState
         appBar: AppBar(
           backgroundColor:
               const Color(0xFFF7F8FC),
+
           elevation: 0,
+
           surfaceTintColor:
               Colors.transparent,
 
@@ -509,7 +531,6 @@ class _AddTodayScreenState
             onPressed: () {
               Navigator.pop(context);
             },
-
             icon: const Icon(
               Icons.arrow_back_ios_new_rounded,
               color: Color(0xFF111827),
@@ -541,9 +562,9 @@ class _AddTodayScreenState
       backgroundColor:
           const Color(0xFFF7F8FC),
 
-      // ========================================================
+      // ======================================================================
       // APP BAR
-      // ========================================================
+      // ======================================================================
 
       appBar: AppBar(
         backgroundColor:
@@ -578,9 +599,9 @@ class _AddTodayScreenState
         centerTitle: true,
       ),
 
-      // ========================================================
+      // ======================================================================
       // BODY
-      // ========================================================
+      // ======================================================================
 
       body: SafeArea(
         child: ListView(
@@ -593,10 +614,6 @@ class _AddTodayScreenState
           ),
 
           children: [
-            // ==================================================
-            // TITLE
-            // ==================================================
-
             const Text(
               'Your Day, Your Space',
               style: TextStyle(
@@ -619,14 +636,13 @@ class _AddTodayScreenState
 
             const SizedBox(height: 25),
 
-            // ==================================================
+            // =================================================================
             // DAY + MOOD
-            // ==================================================
+            // =================================================================
 
             Row(
               crossAxisAlignment:
                   CrossAxisAlignment.start,
-
               children: [
                 Expanded(
                   child: _dayDateCard(),
@@ -642,9 +658,9 @@ class _AddTodayScreenState
 
             const SizedBox(height: 20),
 
-            // ==================================================
+            // =================================================================
             // EDIT + SAVE
-            // ==================================================
+            // =================================================================
 
             Row(
               children: [
@@ -659,21 +675,28 @@ class _AddTodayScreenState
                     style:
                         OutlinedButton.styleFrom(
                       foregroundColor:
-                          const Color(0xFF111827),
+                          const Color(
+                        0xFF111827,
+                      ),
 
-                      side: const BorderSide(
-                        color: Color(0xFFD1D5DB),
+                      side:
+                          const BorderSide(
+                        color:
+                            Color(0xFFD1D5DB),
                       ),
 
                       padding:
-                          const EdgeInsets.symmetric(
+                          const EdgeInsets
+                              .symmetric(
                         vertical: 15,
                       ),
 
                       shape:
                           RoundedRectangleBorder(
                         borderRadius:
-                            BorderRadius.circular(15),
+                            BorderRadius.circular(
+                          15,
+                        ),
                       ),
                     ),
 
@@ -691,38 +714,50 @@ class _AddTodayScreenState
 
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: isEditing
-                        ? () => _saveToday()
-                        : null,
+                    onPressed:
+                        isEditing &&
+                                !isSaving
+                            ? () =>
+                                _saveToday()
+                            : null,
 
                     style:
                         ElevatedButton.styleFrom(
                       backgroundColor:
-                          const Color(0xFF111827),
+                          const Color(
+                        0xFF111827,
+                      ),
 
                       foregroundColor:
                           Colors.white,
 
                       disabledBackgroundColor:
-                          const Color(0xFFD1D5DB),
+                          const Color(
+                        0xFFD1D5DB,
+                      ),
 
                       elevation: 0,
 
                       padding:
-                          const EdgeInsets.symmetric(
+                          const EdgeInsets
+                              .symmetric(
                         vertical: 15,
                       ),
 
                       shape:
                           RoundedRectangleBorder(
                         borderRadius:
-                            BorderRadius.circular(15),
+                            BorderRadius.circular(
+                          15,
+                        ),
                       ),
                     ),
 
-                    child: const Text(
-                      'Save',
-                      style: TextStyle(
+                    child: Text(
+                      isSaving
+                          ? 'Saving...'
+                          : 'Save',
+                      style: const TextStyle(
                         fontWeight:
                             FontWeight.w700,
                       ),
@@ -734,13 +769,11 @@ class _AddTodayScreenState
 
             const SizedBox(height: 30),
 
-            // ==================================================
+            // =================================================================
             // GRATITUDE
-            // ==================================================
+            // =================================================================
 
-            _sectionTitle(
-              'Gratitude',
-            ),
+            _sectionTitle('Gratitude'),
 
             const SizedBox(height: 12),
 
@@ -753,13 +786,11 @@ class _AddTodayScreenState
 
             const SizedBox(height: 28),
 
-            // ==================================================
+            // =================================================================
             // TODAY TASK
-            // ==================================================
+            // =================================================================
 
-            _sectionTitle(
-              'Today Task',
-            ),
+            _sectionTitle('Today Task'),
 
             const SizedBox(height: 12),
 
@@ -772,13 +803,11 @@ class _AddTodayScreenState
 
             const SizedBox(height: 28),
 
-            // ==================================================
+            // =================================================================
             // FUTURE GOAL
-            // ==================================================
+            // =================================================================
 
-            _sectionTitle(
-              'Future Goal',
-            ),
+            _sectionTitle('Future Goal'),
 
             const SizedBox(height: 12),
 
@@ -791,9 +820,9 @@ class _AddTodayScreenState
 
             const SizedBox(height: 28),
 
-            // ==================================================
-            // WRONG TODAY
-            // ==================================================
+            // =================================================================
+            // WRONG
+            // =================================================================
 
             _sectionTitle(
               'What I Did Wrong Today',
@@ -810,9 +839,9 @@ class _AddTodayScreenState
 
             const SizedBox(height: 28),
 
-            // ==================================================
-            // LEARNED TODAY
-            // ==================================================
+            // =================================================================
+            // LEARNED
+            // =================================================================
 
             _sectionTitle(
               'What I Learned Today',
@@ -829,13 +858,11 @@ class _AddTodayScreenState
 
             const SizedBox(height: 28),
 
-            // ==================================================
+            // =================================================================
             // LESSON
-            // ==================================================
+            // =================================================================
 
-            _sectionTitle(
-              'Lesson',
-            ),
+            _sectionTitle('Lesson'),
 
             const SizedBox(height: 12),
 
@@ -843,50 +870,68 @@ class _AddTodayScreenState
 
             const SizedBox(height: 30),
 
-            // ==================================================
+            // =================================================================
             // SAVE TODAY
-            // ==================================================
+            // =================================================================
 
             SizedBox(
               width: double.infinity,
 
               child: ElevatedButton(
-                onPressed: isEditing
-                    ? () => _saveToday(
-                          closeAfterSave: true,
-                        )
-                    : () {
-                        setState(() {
-                          isEditing = true;
-                        });
-                      },
+                onPressed:
+                    isSaving
+                        ? null
+                        : isEditing
+                            ? () =>
+                                _saveToday(
+                                  closeAfterSave:
+                                      true,
+                                )
+                            : () {
+                                setState(() {
+                                  isEditing =
+                                      true;
+                                });
+                              },
 
                 style:
                     ElevatedButton.styleFrom(
                   backgroundColor:
-                      const Color(0xFF111827),
+                      const Color(
+                    0xFF111827,
+                  ),
 
                   foregroundColor:
                       Colors.white,
 
+                  disabledBackgroundColor:
+                      const Color(
+                    0xFFD1D5DB,
+                  ),
+
                   elevation: 0,
 
                   padding:
-                      const EdgeInsets.symmetric(
+                      const EdgeInsets
+                          .symmetric(
                     vertical: 17,
                   ),
 
                   shape:
                       RoundedRectangleBorder(
                     borderRadius:
-                        BorderRadius.circular(16),
+                        BorderRadius.circular(
+                      16,
+                    ),
                   ),
                 ),
 
                 child: Text(
-                  isEditing
-                      ? 'Save Today'
-                      : 'Edit Today',
+                  isSaving
+                      ? 'Saving...'
+                      : isEditing
+                          ? 'Save Today'
+                          : 'Edit Today',
                   style: const TextStyle(
                     fontSize: 15,
                     fontWeight:
@@ -901,9 +946,9 @@ class _AddTodayScreenState
     );
   }
 
-  // ============================================================
-  // DAY & DATE CARD
-  // ============================================================
+  // ==========================================================================
+  // DAY DATE CARD
+  // ==========================================================================
 
   Widget _dayDateCard() {
     return Container(
@@ -916,7 +961,8 @@ class _AddTodayScreenState
             BorderRadius.circular(20),
 
         border: Border.all(
-          color: const Color(0xFFE5E7EB),
+          color:
+              const Color(0xFFE5E7EB),
         ),
       ),
 
@@ -929,8 +975,10 @@ class _AddTodayScreenState
             'Day & Date',
             style: TextStyle(
               fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF374151),
+              fontWeight:
+                  FontWeight.w700,
+              color:
+                  Color(0xFF374151),
             ),
           ),
 
@@ -950,15 +998,19 @@ class _AddTodayScreenState
                   const Color(0xFFF7F8FC),
 
               borderRadius:
-                  BorderRadius.circular(14),
+                  BorderRadius.circular(
+                14,
+              ),
             ),
 
             child: Column(
               children: [
                 const Icon(
-                  Icons.calendar_month_rounded,
+                  Icons
+                      .calendar_month_rounded,
                   size: 27,
-                  color: Color(0xFF111827),
+                  color:
+                      Color(0xFF111827),
                 ),
 
                 const SizedBox(height: 7),
@@ -968,7 +1020,8 @@ class _AddTodayScreenState
                   textAlign:
                       TextAlign.center,
 
-                  style: const TextStyle(
+                  style:
+                      const TextStyle(
                     fontSize: 13,
                     fontWeight:
                         FontWeight.w700,
@@ -984,7 +1037,8 @@ class _AddTodayScreenState
                   textAlign:
                       TextAlign.center,
 
-                  style: const TextStyle(
+                  style:
+                      const TextStyle(
                     fontSize: 11,
                     color:
                         Color(0xFF6B7280),
@@ -998,9 +1052,9 @@ class _AddTodayScreenState
     );
   }
 
-  // ============================================================
+  // ==========================================================================
   // MOOD CARD
-  // ============================================================
+  // ==========================================================================
 
   Widget _moodCard() {
     return Container(
@@ -1013,7 +1067,8 @@ class _AddTodayScreenState
             BorderRadius.circular(20),
 
         border: Border.all(
-          color: const Color(0xFFE5E7EB),
+          color:
+              const Color(0xFFE5E7EB),
         ),
       ),
 
@@ -1026,8 +1081,10 @@ class _AddTodayScreenState
             'Mood',
             style: TextStyle(
               fontSize: 14,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF374151),
+              fontWeight:
+                  FontWeight.w700,
+              color:
+                  Color(0xFF374151),
             ),
           ),
 
@@ -1056,18 +1113,24 @@ class _AddTodayScreenState
               filled: true,
 
               fillColor:
-                  const Color(0xFFF7F8FC),
+                  const Color(
+                0xFFF7F8FC,
+              ),
 
               border:
                   OutlineInputBorder(
                 borderRadius:
-                    BorderRadius.circular(14),
+                    BorderRadius.circular(
+                  14,
+                ),
                 borderSide:
                     BorderSide.none,
               ),
 
               contentPadding:
-                  const EdgeInsets.all(12),
+                  const EdgeInsets.all(
+                12,
+              ),
             ),
           ),
         ],
@@ -1075,32 +1138,33 @@ class _AddTodayScreenState
     );
   }
 
-  // ============================================================
+  // ==========================================================================
   // SECTION TITLE
-  // ============================================================
+  // ==========================================================================
 
   Widget _sectionTitle(
     String title,
   ) {
     return Text(
       title,
-
       style: const TextStyle(
         fontSize: 20,
-        fontWeight: FontWeight.w800,
-        color: Color(0xFF111827),
+        fontWeight:
+            FontWeight.w800,
+        color:
+            Color(0xFF111827),
       ),
     );
   }
 
-  // ============================================================
-  // CIRCLE INPUT LIST
-  // ============================================================
+  // ==========================================================================
+  // CIRCLE LIST
+  // ==========================================================================
 
   Widget _circleInputList({
-    required List<TextEditingController>
+    required List<
+            TextEditingController>
         controllers,
-
     required String hintPrefix,
   }) {
     return Column(
@@ -1114,9 +1178,6 @@ class _AddTodayScreenState
             ),
 
             child: Row(
-              crossAxisAlignment:
-                  CrossAxisAlignment.center,
-
               children: [
                 Container(
                   width: 9,
@@ -1131,15 +1192,13 @@ class _AddTodayScreenState
                   ),
                 ),
 
-                const SizedBox(
-                  width: 12,
-                ),
+                const SizedBox(width: 12),
 
                 Expanded(
-                  child: _smallTextField(
+                  child:
+                      _smallTextField(
                     controller:
                         controllers[index],
-
                     hint:
                         '$hintPrefix ${index + 1}',
                   ),
@@ -1152,14 +1211,14 @@ class _AddTodayScreenState
     );
   }
 
-  // ============================================================
-  // RECTANGLE INPUT LIST
-  // ============================================================
+  // ==========================================================================
+  // RECTANGLE LIST
+  // ==========================================================================
 
   Widget _rectangleInputList({
-    required List<TextEditingController>
+    required List<
+            TextEditingController>
         controllers,
-
     required String hintPrefix,
   }) {
     return Column(
@@ -1173,9 +1232,6 @@ class _AddTodayScreenState
             ),
 
             child: Row(
-              crossAxisAlignment:
-                  CrossAxisAlignment.center,
-
               children: [
                 Container(
                   width: 9,
@@ -1187,7 +1243,6 @@ class _AddTodayScreenState
                         const Color(
                       0xFF111827,
                     ),
-
                     borderRadius:
                         BorderRadius.circular(
                       2,
@@ -1195,15 +1250,13 @@ class _AddTodayScreenState
                   ),
                 ),
 
-                const SizedBox(
-                  width: 12,
-                ),
+                const SizedBox(width: 12),
 
                 Expanded(
-                  child: _smallTextField(
+                  child:
+                      _smallTextField(
                     controller:
                         controllers[index],
-
                     hint:
                         '$hintPrefix ${index + 1}',
                   ),
@@ -1216,14 +1269,13 @@ class _AddTodayScreenState
     );
   }
 
-  // ============================================================
+  // ==========================================================================
   // SMALL TEXT FIELD
-  // ============================================================
+  // ==========================================================================
 
   Widget _smallTextField({
     required TextEditingController
         controller,
-
     required String hint,
   }) {
     return TextField(
@@ -1259,7 +1311,9 @@ class _AddTodayScreenState
         border:
             OutlineInputBorder(
           borderRadius:
-              BorderRadius.circular(13),
+              BorderRadius.circular(
+            13,
+          ),
 
           borderSide:
               const BorderSide(
@@ -1271,7 +1325,9 @@ class _AddTodayScreenState
         enabledBorder:
             OutlineInputBorder(
           borderRadius:
-              BorderRadius.circular(13),
+              BorderRadius.circular(
+            13,
+          ),
 
           borderSide:
               const BorderSide(
@@ -1283,7 +1339,9 @@ class _AddTodayScreenState
         focusedBorder:
             OutlineInputBorder(
           borderRadius:
-              BorderRadius.circular(13),
+              BorderRadius.circular(
+            13,
+          ),
 
           borderSide:
               const BorderSide(
@@ -1295,9 +1353,9 @@ class _AddTodayScreenState
     );
   }
 
-  // ============================================================
+  // ==========================================================================
   // LESSON
-  // ============================================================
+  // ==========================================================================
 
   Widget _lessonTextField() {
     return TextField(
@@ -1333,7 +1391,9 @@ class _AddTodayScreenState
         border:
             OutlineInputBorder(
           borderRadius:
-              BorderRadius.circular(18),
+              BorderRadius.circular(
+            18,
+          ),
 
           borderSide:
               const BorderSide(
@@ -1345,7 +1405,9 @@ class _AddTodayScreenState
         enabledBorder:
             OutlineInputBorder(
           borderRadius:
-              BorderRadius.circular(18),
+              BorderRadius.circular(
+            18,
+          ),
 
           borderSide:
               const BorderSide(
@@ -1357,7 +1419,9 @@ class _AddTodayScreenState
         focusedBorder:
             OutlineInputBorder(
           borderRadius:
-              BorderRadius.circular(18),
+              BorderRadius.circular(
+            18,
+          ),
 
           borderSide:
               const BorderSide(
